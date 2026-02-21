@@ -1,3 +1,4 @@
 add_executable(example  main.cpp
                         Eventloop.cpp
-                        Timer.cpp)
+                        Timer.cpp
+                        Log.cpp)

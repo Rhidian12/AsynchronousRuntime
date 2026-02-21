@@ -1,18 +1,20 @@
-#include <iostream>
 
 #include "Eventloop.h"
 #include "Promise.h"
 #include "Timer.h"
+#include "Log.h"
+
+Logger const LOGGER;
 
 Promise Work(Eventloop& eventloop)
 {
   Timer timer;
-  std::cout << "Work: First timer" << std::endl;
+  LINFO(LOGGER, "Work: First timer");
   co_await timer.Wait(eventloop, 1);
 
-  std::cout << "Work: Second timer" << std::endl;
+  LINFO(LOGGER, "Work: Second timer");
   co_await timer.Wait(eventloop, 2);
-  std::cout << "Work: Done waiting 2 seconds" << std::endl;
+  LINFO(LOGGER, "Work: Done waiting 2 seconds");
   co_return;
 }
 
@@ -20,12 +22,12 @@ Promise Work2(Eventloop& eventloop)
 {
   Timer timer;
 
-  std::cout << "Work2: First timer" << std::endl;
+  LINFO(LOGGER, "Work2: First timer");
   co_await timer.Wait(eventloop, 1);
 
-  std::cout << "Work2: Second timer" << std::endl;
+  LINFO(LOGGER, "Work2: Second timer");
   co_await timer.Wait(eventloop, 2);
-  std::cout << "Work2: Done waiting 2 seconds" << std::endl;
+  LINFO(LOGGER, "Work2: Done waiting 2 seconds");
   co_return;
 }
 
@@ -40,13 +42,13 @@ Promise AsyncMain(Eventloop& eventloop)
 
 int main()
 {
-  std::cout << "Creating eventloop" << std::endl;
+  LINFO(LOGGER, "Creating eventloop");
   Eventloop eventloop;
 
-  std::cout << "Starting AsyncMain" << std::endl;
+  LINFO(LOGGER, "Starting AsyncMain");
   auto promise = AsyncMain(eventloop);
 
-  std::cout << "Running eventloop" << std::endl;
+  LINFO(LOGGER, "Running eventloop");
   eventloop.Run();
 
   return 0;

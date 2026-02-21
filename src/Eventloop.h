@@ -12,6 +12,11 @@ class Eventloop
   Eventloop();
   ~Eventloop();
 
+  Eventloop(const Eventloop&) = delete;
+  Eventloop& operator=(const Eventloop&) = delete;
+  Eventloop(Eventloop&&) = delete;
+  Eventloop& operator=(Eventloop&&) = delete;
+
   void AddFD(int fd, Promise promiseToSet);
 
   // Run the event loop until no work remains on it

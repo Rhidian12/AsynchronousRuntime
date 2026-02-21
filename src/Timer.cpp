@@ -3,6 +3,7 @@
 #include <sys/timerfd.h>
 #include <unistd.h>
 
+#include <cstring>
 #include <format>
 
 #include "Eventloop.h"
@@ -13,39 +14,38 @@ namespace
   Logger const LOGGER;
 }
 
-Timer::Timer() {}
-
-Timer::~Timer()
-{
-  LDEBUG(LOGGER, std::format("Closing timer fd {}", m_timerFd));
-  close(m_timerFd);
-}
-
 Promise Timer::Wait(Eventloop& eventloop, int timeoutSeconds)
 {
   Promise promise;
 
-  itimerspec val{};
+  itimerspec timerData{};
 
-  val.it_value.tv_sec = timeoutSeconds;
-  val.it_value.tv_nsec = 0;
+  // Set the timer to expire after 'timeoutSeconds' seconds.
+  timerData.it_value.tv_sec = timeoutSeconds;
+  // Our timer should not repeat, so we set the interval to 0.
+  timerData.it_value.tv_nsec = 0;
 
-  val.it_interval.tv_sec = 0;
-  val.it_interval.tv_nsec = 0;
+  // Our timer should not repeat, so we set the interval to 0.
+  timerData.it_interval.tv_sec = 0;
+  timerData.it_interval.tv_nsec = 0;
 
-  m_timerFd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK);
-  if (m_timerFd == -1)
+  // Create our timer file descriptor. We use CLOCK_MONOTONIC to avoid issues with system clock changes and TFD_NONBLOCK to make our timer non-blocking.
+  int timerFd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK);
+  if (timerFd == -1)
   {
-    LERROR(LOGGER, "Failed to create timerfd");
+    LERROR(LOGGER, std::format("Failed to create timerfd: {}", strerror(errno)));
     throw std::runtime_error("Failed to create timerfd");
   }
-  if (timerfd_settime(m_timerFd, 0, &val, nullptr) == -1)
+
+  // Set our timer with the earlier created 'timerData'.
+  if (timerfd_settime(timerFd, 0, &timerData, nullptr) == -1)
   {
-    LERROR(LOGGER, "Failed to set timerfd");
+    LERROR(LOGGER, std::format("Failed to set timerfd: {}", strerror(errno)));
     throw std::runtime_error("Failed to set timerfd");
   }
 
-  eventloop.AddFD(m_timerFd, promise);
+  // Add our timer fd and promise to the eventloop.
+  eventloop.AddFD(timerFd, promise, /* closeFDOnComplete = */ true);
 
   return promise;
 }

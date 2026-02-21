@@ -9,12 +9,13 @@ Logger const LOGGER;
 Promise Work(Eventloop& eventloop)
 {
   Timer timer;
+
   LINFO(LOGGER, "Work: First timer");
   co_await timer.Wait(eventloop, 1);
 
   LINFO(LOGGER, "Work: Second timer");
-  co_await timer.Wait(eventloop, 2);
-  LINFO(LOGGER, "Work: Done waiting 2 seconds");
+  co_await timer.Wait(eventloop, 3);
+  LINFO(LOGGER, "Work: coroutine is finishing");
   co_return;
 }
 
@@ -27,7 +28,7 @@ Promise Work2(Eventloop& eventloop)
 
   LINFO(LOGGER, "Work2: Second timer");
   co_await timer.Wait(eventloop, 2);
-  LINFO(LOGGER, "Work2: Done waiting 2 seconds");
+  LINFO(LOGGER, "Work2: coroutine is finishing");
   co_return;
 }
 
@@ -42,7 +43,7 @@ Promise AsyncMain(Eventloop& eventloop)
 
 int main()
 {
-  LINFO(LOGGER, "Creating eventloop");
+  LDEBUG(LOGGER, "Creating eventloop");
   Eventloop eventloop;
 
   LINFO(LOGGER, "Starting AsyncMain");
